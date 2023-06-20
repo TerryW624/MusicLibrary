@@ -53,7 +53,48 @@ song_schema = SongSchema()
 songs_schema = SongSchema(many=True)
 
 # Resources
+class SongsResource(Resource):
+    def get(self):
+        all_songs = Song.query.all()
+        return songs_schema.dump(all_songs)
 
+    def post(self):
+        print(request)
+        form_data = request.get_json()
+        try:
+            new_song = song_schema.load(form_data)
+            db.session.add(new_song)
+            db.session.commit()
+            return song_schema.dump(new_song), 201
+        except ValidationError as err:
+            return err.messages, 400
 
+class SongResource(Resource):
+    def get(self, song_id):
+        song_from_database = Song.query.get_or_404(song_id)
+        return song_schema.dump(song_from_database)
+    
+    def delete(self, song_id):
+        song_from_database = Song.query.get_or_404(song_id)
+        db.session.delete(song_from_database)
+        db.session.commit()
+        return '', 204
+    
+    def put(self, song_id):
+        song_from_database = Song.query.get_or_404(song_id)
+        if "title" in request.json: 
+            song_from_database.title = request.json["title"]
+        if "artist" in request.json: 
+            song_from_database.artist = request.json["artist"]
+        if "album" in request.json: 
+            song_from_database.album = request.json["album"]
+        if "release_date" in request.json:
+            song_from_database.release_date = request.json["release_date"]
+        if "genre" in request.json:
+            song_from_database.genre = request.json["genre"]
+        db.session.commit()
+        return song_schema.dump(song_from_database)
 
 # Routes
+api.add_resource(SongsResource, '/api/songs')
+api.add_resource(SongResource, '/api/songs/<int:song_id>')
