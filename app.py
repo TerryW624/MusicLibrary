@@ -43,7 +43,7 @@ class SongSchema(ma.Schema):
     release_date = fields.Date(required=True)
     genre = fields.String(required=True)
     class Meta:
-        fields = ("id", "title", "artist", "album", "release_date", "genre")
+        fields = ("id", "title", "artist", "album", "release_date", "genre", "likes")
 
     @post_load
     def create_song(self, data, **kwargs):
